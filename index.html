@@ -19,9 +19,26 @@
     <div id="app">
       <p id="connection-info">
         Other peers can connect to you by going to {{url}}
-        <span></span>
       </p>
+      <template v-if="error">
+        {{ error }}
+      </template>
+      <template v-else>
+        <div>
+          <h2>MIDI input &rarr; WebRTC</h2>
+          <port-selector :selection="currentInput" :available="availableInputs"></port-selector>
+        </div>
+        <div>
+          <h2>WebRTC &rarr; MIDI output</h2>
+          <port-selector :selection="currentOutput" :available="availableOutputs"></port-selector>
+        </div>
+      </template>
     </div>
+    <script type="x-template" id="port-selector">
+      <div>
+        Meow
+      </div>
+    </script>
 
     <script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
