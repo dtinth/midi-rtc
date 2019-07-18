@@ -27,6 +27,7 @@ const app = new Vue({
   data: {
     baseUrl: location.href.replace(/[\?#].*/, ''),
     peerId: '',
+    activeConnections: [],
     error: null,
     selectedInput: null,
     selectedOutput: null,
@@ -34,6 +35,8 @@ const app = new Vue({
     availableOutputs: [],
     currentInputPort: null,
     currentOutputPort: null,
+    received: 0,
+    sent: 0,
   },
   computed: {
     url() {
@@ -68,7 +71,8 @@ const app = new Vue({
         }
         if (nextValue) {
           nextValue.onmidimessage = (e) => {
-            console.log(e)
+            this.sent ++
+            this.activeConnections.forEach(c => c.send([...e.data]))
           }
         }
       },
@@ -78,6 +82,19 @@ const app = new Vue({
   async mounted() {
     const peer = new Peer(sessionStorage.savedPeerId || undefined)
     window.peer = this.peer = peer
+    const registerConnection = (conn) => {
+      this.activeConnections.push(conn)
+      conn.on('data', (data) => {
+        this.received ++
+        console.log('Received ' + data)
+        if (this.currentOutputPort) {
+          this.currentOutputPort.send(data)
+        }
+      })
+      conn.on('close', () => {
+        this.activeConnections = this.activeConnections.filter(c => c !== conn)
+      })
+    }
     peer.on('open', (id) => {
       this.peerId = id
       sessionStorage.savedPeerId = id
@@ -88,11 +105,13 @@ const app = new Vue({
         const conn = peer.connect(target)
         conn.on('open', () => {
           console.log('Connected!')
+          registerConnection(conn)
         })
       }
     })
     peer.on('connection', conn => {
       console.log('Connection received!')
+      registerConnection(conn)
     })
     try {
       const access = this.midiAccess = await navigator.requestMIDIAccess({ sysex: false })

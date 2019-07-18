@@ -20,17 +20,33 @@
       <p id="connection-info">
         Other peers can connect to you by going to {{url}}
       </p>
+      <p id="connection-status">
+        Connected to {{activeConnections.length}} other peer{{activeConnections.length === 1 ? '' : 's'}}.
+      </p>
       <template v-if="error">
         {{ error }}
       </template>
       <template v-else>
-        <div>
-          <h2>MIDI input &rarr; WebRTC</h2>
-          <port-selector :selected="currentInput" :available="availableInputs" @select="selectedInput = $event"></port-selector>
-        </div>
-        <div>
-          <h2>WebRTC &rarr; MIDI output</h2>
-          <port-selector :selected="currentOutput" :available="availableOutputs" @select="selectedOutput = $event"></port-selector>
+        <div style="display: flex">
+          <div>
+            <h2>MIDI input</h2>
+            <port-selector :selected="currentInput" :available="availableInputs" @select="selectedInput = $event"></port-selector>
+          </div>
+          <div class="arrow">
+            &rarr;
+          </div>
+          <div>
+            <h2>WebRTC</h2>
+            Received: {{ received }}<br>
+            Sent: {{ sent }}<br>
+          </div>
+          <div class="arrow">
+            &rarr;
+          </div>
+          <div>
+            <h2>MIDI output</h2>
+            <port-selector :selected="currentOutput" :available="availableOutputs" @select="selectedOutput = $event"></port-selector>
+          </div>
         </div>
       </template>
     </div>
