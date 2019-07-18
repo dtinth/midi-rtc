@@ -1,4 +1,21 @@
-const peer = new Peer(localStorage.savedPeerId || undefined);
+/* global Peer, Vue */
+
+Vue.component('port-selector', {
+  template: '#port-selector',
+  props: ['available', 'selected'],
+  computed: {
+    options() {
+      return [
+        { key: null, text: 'None selected', selected: this.selected === null },
+        ...this.available.map(item => ({
+          key: item.key,
+          text: item.name,
+          selected: this.selected === item.key
+        }))
+      ]
+    }
+  }
+})
 
 const app = new Vue({
   el: '#app',
@@ -23,13 +40,27 @@ const app = new Vue({
     },
   },
   async mounted() {
+    const peer = new Peer(sessionStorage.savedPeerId || undefined)
+    window.peer = peer
     peer.on('open', (id) => {
-      this.peerId = id;
-      localStorage.savedPeerId = id;
-    });
+      this.peerId = id
+      sessionStorage.savedPeerId = id
+      const connectMatch = location.hash.match(/#(\w+)/)
+      if (connectMatch) {
+        const target = connectMatch[1]
+        console.log('Connecting to ', target)
+        const conn = peer.connect(target)
+        conn.on('open', () => {
+          console.log('Connected!')
+        })
+      }
+    })
+    peer.on('connection', conn => {
+      console.log('Connection received!')
+    })
     try {
       const access = await navigator.requestMIDIAccess({ sysex: false })
-      access.onstatechange = () => {
+      const refreshPorts = () => {
         this.availableInputs = getKeys(access.inputs).map(key => ({
           key,
           name: access.inputs.get(key).name
@@ -39,6 +70,8 @@ const app = new Vue({
           name: access.outputs.get(key).name
         }))
       }
+      access.onstatechange = refreshPorts()
+      refreshPorts()
     } catch (e) {
       this.error = ('Failed to request MIDI access! ' + e)
     }
@@ -53,4 +86,5 @@ function getKeys(portMap) {
     if (done) break
     keys.push(key)
   }
+  return keys
 }

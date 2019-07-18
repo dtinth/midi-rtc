@@ -26,17 +26,21 @@
       <template v-else>
         <div>
           <h2>MIDI input &rarr; WebRTC</h2>
-          <port-selector :selection="currentInput" :available="availableInputs"></port-selector>
+          <port-selector :selected="currentInput" :available="availableInputs"></port-selector>
         </div>
         <div>
           <h2>WebRTC &rarr; MIDI output</h2>
-          <port-selector :selection="currentOutput" :available="availableOutputs"></port-selector>
+          <port-selector :selected="currentOutput" :available="availableOutputs"></port-selector>
         </div>
       </template>
     </div>
     <script type="x-template" id="port-selector">
       <div>
-        Meow
+        <ul class="port-selector">
+          <li v-for="option of options" :key="option.key" :class="{ 'is-selected': option.selected }">
+            <a href="javascript:">{{ option.text }}</a>
+          </li>
+        </ul>
       </div>
     </script>
 
