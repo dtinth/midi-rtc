@@ -10,14 +10,22 @@
     <link rel="stylesheet" href="/style.css">
     
     <!-- import the webpage's javascript file -->
-    <script src="/script.js" defer></script>
   </head>  
   <body>
-    <h1>Hi there!</h1>
-    
+    <h1>midirtc</h1>
     <p>
-      I'm your cool new webpage. Made with <a href="https://glitch.com">Glitch</a>!
+      Send and receive MIDI messages over WebRTC. Powered by PeerJS and Web MIDI API.
     </p>
+    <div id="app">
+      <p id="connection-info">
+        Other peers can connect to you by going to {{url}}
+        <span></span>
+      </p>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="/script.js"></script>
 
     <!-- include the Glitch button to show what the webpage is about and
           to make it easier for folks to view source and remix -->

@@ -1,5 +1,20 @@
-/* If you're feeling fancy you can add interactivity 
-    to your site with Javascript */
+const peer = new Peer(localStorage.savedPeerId || undefined);
 
-// prints "hi" in the browser's dev tools console
-console.log('hi');
+const app = new Vue({
+  el: '#app',
+  data: {
+    baseUrl: location.href.replace(/[\?#].*/, ''),
+    peerId: '',
+  },
+  computed: {
+    url() {
+      return this.baseUrl + '#' + this.peerId
+    }
+  },
+  mounted() {
+    peer.on('open', (id) => {
+      this.peerId = id;
+      localStorage.savedPeerId = id;
+    });
+  }
+})
