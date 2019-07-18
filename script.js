@@ -14,6 +14,11 @@ Vue.component('port-selector', {
         }))
       ]
     }
+  },
+  methods: {
+    select(option) {
+      this.$emit('select', option.key)
+    }
   }
 })
 
@@ -27,6 +32,8 @@ const app = new Vue({
     selectedOutput: null,
     availableInputs: [],
     availableOutputs: [],
+    currentInputPort: null,
+    currentOutputPort: null,
   },
   computed: {
     url() {
@@ -39,9 +46,38 @@ const app = new Vue({
       return this.selectedOutput
     },
   },
+  watch: {
+    selectedInput: {
+      handler(nextValue, currentValue) {
+        this.currentInputPort = nextValue != null ? this.midiAccess.inputs.get(nextValue) : null
+        console.log('currentInputPort =>', this.currentInputPort)
+      },
+      immediate: true
+    },
+    selectedOutput: {
+      handler(nextValue, currentValue) {
+        this.currentOutputPort = nextValue != null ? this.midiAccess.outputs.get(nextValue) : null
+        console.log('currentOutputPort =>', this.currentOutputPort)
+      },
+      immediate: true
+    },
+    currentInputPort: {
+      handler(nextValue, currentValue) {
+        if (currentValue) {
+          currentValue.onmidimessage = () => {}
+        }
+        if (nextValue) {
+          nextValue.onmidimessage = (e) => {
+            console.log(e)
+          }
+        }
+      },
+      immediate: true
+    },
+  },
   async mounted() {
     const peer = new Peer(sessionStorage.savedPeerId || undefined)
-    window.peer = peer
+    window.peer = this.peer = peer
     peer.on('open', (id) => {
       this.peerId = id
       sessionStorage.savedPeerId = id
@@ -59,7 +95,7 @@ const app = new Vue({
       console.log('Connection received!')
     })
     try {
-      const access = await navigator.requestMIDIAccess({ sysex: false })
+      const access = this.midiAccess = await navigator.requestMIDIAccess({ sysex: false })
       const refreshPorts = () => {
         this.availableInputs = getKeys(access.inputs).map(key => ({
           key,

@@ -26,11 +26,11 @@
       <template v-else>
         <div>
           <h2>MIDI input &rarr; WebRTC</h2>
-          <port-selector :selected="currentInput" :available="availableInputs"></port-selector>
+          <port-selector :selected="currentInput" :available="availableInputs" @select="selectedInput = $event"></port-selector>
         </div>
         <div>
           <h2>WebRTC &rarr; MIDI output</h2>
-          <port-selector :selected="currentOutput" :available="availableOutputs"></port-selector>
+          <port-selector :selected="currentOutput" :available="availableOutputs" @select="selectedOutput = $event"></port-selector>
         </div>
       </template>
     </div>
@@ -38,7 +38,7 @@
       <div>
         <ul class="port-selector">
           <li v-for="option of options" :key="option.key" :class="{ 'is-selected': option.selected }">
-            <a href="javascript:">{{ option.text }}</a>
+            <a href="javascript:" @click="select(option)">{{ option.text }}</a>
           </li>
         </ul>
       </div>

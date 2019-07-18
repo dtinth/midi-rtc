@@ -10,6 +10,6 @@ h1 {
   color: #373fff;
 }
 
-.port-selector .selected {
+.port-selector .is-selected {
   font-weight: bold;
 }
