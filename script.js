@@ -125,7 +125,7 @@ const app = new Vue({
           name: access.outputs.get(key).name
         }))
       }
-      access.onstatechange = refreshPorts()
+      access.onstatechange = refreshPorts
       refreshPorts()
     } catch (e) {
       this.error = ('Failed to request MIDI access! ' + e)
