@@ -22,6 +22,19 @@ Vue.component('port-selector', {
   }
 })
 
+const trackersAnnounceURLs = [
+  'wss://tracker.btorrent.xyz',
+  'wss://tracker.openwebtorrent.com',
+]
+
+let roomId
+const roomIdMatch = location.hash.match(/^\#?([a-f0-9-]+)/)
+if (roomIdMatch) {
+  roomId = roomIdMatch[1]
+} else {
+  roomId = 
+}
+
 const app = new Vue({
   el: '#app',
   data: {

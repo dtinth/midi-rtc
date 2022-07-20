@@ -12,7 +12,7 @@
   <body>
     <h1>MIDI-RTC</h1>
     <p>
-      Send and receive MIDI messages over WebRTC. Powered by PeerJS and Web MIDI API.
+      Send and receive MIDI messages over WebRTC. Powered by simple-peer, P2PT and Web MIDI API.
     </p>
     <div id="app" class="container">
       <p id="connection-info">
@@ -58,7 +58,11 @@
       </div>
     </script>
 
-    <script src="https://unpkg.com/peerjs@1.4.5/dist/peerjs.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/p2pkit@0.0.0-2/dist/index.js"
+      integrity="sha256-IBqKNNdZBkvlyBDTBnPO57idR/RhhMygjQ59d9MsNZ4="
+      crossorigin="anonymous"
+    ></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="/script.js"></script>
 
