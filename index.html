@@ -19,7 +19,7 @@
         Other peers can connect to you by going to {{url}}
       </p>
       <p id="connection-status">
-        Connected to {{activeConnections.length}} other peer{{activeConnections.length === 1 ? '' : 's'}}.
+        Connected to {{activeConnections}} other peer{{activeConnections === 1 ? '' : 's'}}.
       </p>
       <template v-if="error">
         {{ error }}

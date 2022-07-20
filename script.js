@@ -1,4 +1,4 @@
-/* global Peer, Vue */
+/* global p2pkit, Vue */
 
 Vue.component('port-selector', {
   template: '#port-selector',
@@ -25,22 +25,29 @@ Vue.component('port-selector', {
 const trackersAnnounceURLs = [
   'wss://tracker.btorrent.xyz',
   'wss://tracker.openwebtorrent.com',
+  'wss://tracker.fastcast.nz',
+  'wss://tracker.sloppyta.co:443/',
+  'wss://tracker.novage.com.ua:443/',
+  'wss://spacetradersapi-chatbox.herokuapp.com:443/announce',
+  'wss://tracker.files.fm:7073/announce',
 ]
+const peers = new Set()
 
 let roomId
-const roomIdMatch = location.hash.match(/^\#?([a-f0-9-]+)/)
+const roomIdMatch = location.hash.match(/^\#?([a-zA-Z0-9-]+)/)
 if (roomIdMatch) {
   roomId = roomIdMatch[1]
 } else {
-  roomId = 
+  roomId = crypto.randomUUID()
+  location.replace('#' + roomId)
 }
+
+const p2pt = new p2pkit.P2PT(trackersAnnounceURLs, roomId)
 
 const app = new Vue({
   el: '#app',
   data: {
     baseUrl: location.href.replace(/[\?#].*/, ''),
-    peerId: '',
-    activeConnections: [],
     error: null,
     selectedInput: null,
     selectedOutput: null,
@@ -50,10 +57,11 @@ const app = new Vue({
     currentOutputPort: null,
     received: 0,
     sent: 0,
+    activeConnections: 0,
   },
   computed: {
     url() {
-      return this.baseUrl + '#' + this.peerId
+      return this.baseUrl + '#' + roomId
     },
     currentInput() {
       return this.selectedInput
@@ -85,7 +93,9 @@ const app = new Vue({
         if (nextValue) {
           nextValue.onmidimessage = (e) => {
             this.sent ++
-            this.activeConnections.forEach(c => c.send([...e.data]))
+            peers.forEach(peer => {
+              p2pt.send(peer, { data: [...e.data] })
+            })
           }
         }
       },
@@ -93,39 +103,34 @@ const app = new Vue({
     },
   },
   async mounted() {
-    const peer = new Peer(sessionStorage.savedPeerId || undefined)
-    window.peer = this.peer = peer
-    const registerConnection = (conn) => {
-      this.activeConnections.push(conn)
-      conn.on('data', (data) => {
-        this.received ++
-        console.log('Received ' + data)
-        if (this.currentOutputPort) {
-          this.currentOutputPort.send(data)
-        }
-      })
-      conn.on('close', () => {
-        this.activeConnections = this.activeConnections.filter(c => c !== conn)
-      })
+    const updateStats = () => {
+      this.activeConnections = peers.size
     }
-    peer.on('open', (id) => {
-      this.peerId = id
-      sessionStorage.savedPeerId = id
-      const connectMatch = location.hash.match(/#(\w+)/)
-      if (connectMatch) {
-        const target = connectMatch[1]
-        console.log('Connecting to ', target)
-        const conn = peer.connect(target)
-        conn.on('open', () => {
-          console.log('Connected!')
-          registerConnection(conn)
-        })
+    p2pt.on('trackerwarning', (error, stats) => {
+      console.warn('trackerwarning =>', error, stats)
+    })
+    p2pt.on('trackerconnect', (tracker, stats) => {
+      console.log('trackerconnect =>', tracker, stats)
+    })
+    p2pt.on('peerconnect', (peer) => {
+      console.log('peerconnect =>', peer)
+      peers.add(peer)
+      updateStats()
+    })
+    p2pt.on('peerclose', (peer) => {
+      console.log('peerclose =>', peer)
+      peers.delete(peer)
+      updateStats()
+    })
+    p2pt.on('msg', (peer, message) => {
+      console.log('received <= ' + message.data)
+      this.received++
+      if (this.currentOutputPort) {
+        this.currentOutputPort.send(message.data)
       }
     })
-    peer.on('connection', conn => {
-      console.log('Connection received!')
-      registerConnection(conn)
-    })
+    p2pt.start()
+    window.p2pt = this.p2pt = p2pt
     try {
       const access = this.midiAccess = await navigator.requestMIDIAccess({ sysex: false })
       const refreshPorts = () => {
