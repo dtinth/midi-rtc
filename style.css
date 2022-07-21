@@ -1,22 +1,3 @@
-body {
-  font-family: Arimo, Helvetica, arial, sans-serif;
-  background: #353433;
-  color: #e9e8e7;
-  margin: 2em;
-}
-
-h1 {
-  font-size: 3em;
-  color: #8b8685;
-}
-
-a {
-  color: #ffb;
-}
-a:hover {
-  color: #ffa;
-}
-
 .port-selector .is-selected {
   font-weight: bold;
 }
